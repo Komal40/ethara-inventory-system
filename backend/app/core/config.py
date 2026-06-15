@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str
-    PROJECT_NAME: str = "Inventory & Order Management System"
+    PROJECT_NAME: str
     
     class Config:
         env_file = ".env"
