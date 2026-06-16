@@ -2,14 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import Base, engine
-from app.models.product import Product
-from app.models.customer import Customer
-from app.models.order import Order
-from app.models.order_item import OrderItem
+from app.models import Product, Customer, Order, OrderItem
+from app.api.endpoints import products, customers, orders, dashboard
 
-print("Initializing Database Schemas...")
 Base.metadata.create_all(bind=engine)
-print("Database Tables Synced Successfully!")
 
 app = FastAPI(title="Inventory System API")
 
@@ -21,7 +17,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+app.include_router(products.router)
+app.include_router(customers.router)
+app.include_router(orders.router)
+app.include_router(dashboard.router)
 @app.get("/")
 def root():
     return {"status": "healthy", "message": "Inventory API Core Running"}
