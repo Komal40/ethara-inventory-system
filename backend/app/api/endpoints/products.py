@@ -24,7 +24,7 @@ def create_product(product_in: ProductCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=CustomResponse[List[ProductResponse]])
 def read_products(db: Session = Depends(get_db)):
-    products_list = db.query(Product).all()
+    products_list = db.query(Product).order_by(Product.id.desc()).all()
     return CustomResponse(data=products_list, message="Products fetched successfully")
 
 @router.get("/{id}", response_model=CustomResponse[ProductResponse])

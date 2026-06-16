@@ -53,5 +53,5 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=CustomResponse[List[OrderResponse]])
 def read_orders(db: Session = Depends(get_db)):
-    orders_list = db.query(Order).all()
+    orders_list = db.query(Order).order_by(Order.id.desc()).all()
     return CustomResponse(data=orders_list)

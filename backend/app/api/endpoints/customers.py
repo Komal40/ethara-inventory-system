@@ -29,7 +29,7 @@ def create_customer(customer_in: CustomerCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=CustomResponse[List[CustomerResponse]])
 def read_customers(db: Session = Depends(get_db)):
-    customers_list = db.query(Customer).all()
+    customers_list = db.query(Customer).order_by(Customer.id.desc()).all()
     
     # Returning a list collection encapsulated inside the envelope data field
     return CustomResponse(
