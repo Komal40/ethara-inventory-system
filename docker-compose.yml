@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Persistent Database Node
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: ethara_inventory_db
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-securepassword2026}
+      - POSTGRES_DB=${DB_NAME:-inventory_records}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_inventory_volume:/var/lib/postgresql/data
+    restart: always
+
+  # 2. Python FastAPI Operational Logic Node
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-securepassword2026}@postgres_db:5432/${DB_NAME:-inventory_records}
+    depends_on:
+      - postgres_db
+    restart: always
+
+  # 3. React SPA Frontend Node
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8000
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: always
+
+# Named Volumes declaration checkpoint for persistent storage architecture
+volumes:
+  pg_inventory_volume:

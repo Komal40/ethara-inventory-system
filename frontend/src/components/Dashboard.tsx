@@ -10,7 +10,7 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     dashboardService.getMetrics()
       .then(res => setMetrics(res.data))
-      .catch(e => setErr('Could not reach backend API pipeline server.'));
+      .catch(() => setErr('Could not reach backend API pipeline server.'));
   }, []);
 
   if (err) return <div className="p-4 bg-red-100 text-red-700 rounded-xl border border-red-200 font-medium">{err}</div>;
