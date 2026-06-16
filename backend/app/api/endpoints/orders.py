@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.core.database import get_db
 from app.models import Order, OrderItem, Product, Customer
@@ -53,5 +53,18 @@ def create_order(order_in: OrderCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=CustomResponse[List[OrderResponse]])
 def read_orders(db: Session = Depends(get_db)):
-    orders_list = db.query(Order).order_by(Order.id.desc()).all()
-    return CustomResponse(data=orders_list)
+    orders_list = (
+        db.query(Order)
+        .options(
+            joinedload(Order.customer),
+            joinedload(Order.items).joinedload(OrderItem.product)
+        )
+        .order_by(Order.id.desc())
+        .all()
+    )
+    return CustomResponse(
+        status_code=200,
+        status=True,
+        message="Data fetched atomically.",
+        data=orders_list
+    )
