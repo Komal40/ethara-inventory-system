@@ -5,13 +5,36 @@ import { type Product } from '../types/api';
 export const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({ name: '', sku: '', price: 0, quantity: 0 });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const load = () => productService.getAll().then(res => setProducts(res.data)).catch(console.error);
 
   useEffect(() => { load(); }, []);
 
+  const validateForm = () => {
+    const tempErrors: Record<string, string> = {};
+    if (!form.name.trim()) tempErrors.name = "Product Name is required.";
+    
+    // SKU Validation: Must be alphanumeric, min 2 chars, uppercase format preferred
+    const skuRegex = /^[A-Z0-9-]+$/i;
+    if (!form.sku.trim()) {
+      tempErrors.sku = "SKU is required.";
+    } else if (!skuRegex.test(form.sku)) {
+      tempErrors.sku = "SKU must contain only letters, numbers, or hyphens.";
+    }
+
+    if (form.price <= 0) tempErrors.price = "Price must be a positive number greater than $0.";
+    if (form.quantity < 0) tempErrors.quantity = "Stock Quantity cannot be negative.";
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     productService.create(form)
       .then(() => { 
         load(); 
@@ -28,18 +51,22 @@ export const Products: React.FC = () => {
         <div>
           <label className="text-xs font-bold text-gray-500 block mb-1">Product Name</label>
           <input className="w-full border rounded-lg p-2 text-sm" value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+       {errors.name && <span className="text-xs text-red-500 mt-1 block">{errors.name}</span>}
         </div>
         <div>
           <label className="text-xs font-bold text-gray-500 block mb-1">SKU</label>
           <input className="w-full border rounded-lg p-2 text-sm" value={form.sku} onChange={e => setForm({...form, sku: e.target.value})} required />
+        {errors.sku && <span className="text-xs text-red-500 mt-1 block">{errors.sku}</span>}
         </div>
         <div>
           <label className="text-xs font-bold text-gray-500 block mb-1">Price ($)</label>
           <input type="number" step="0.01" className="w-full border rounded-lg p-2 text-sm" value={form.price || ''} onChange={e => setForm({...form, price: parseFloat(e.target.value)})} required />
+          {errors.price && <span className="text-xs text-red-500 mt-1 block">{errors.price}</span>}
         </div>
         <div>
           <label className="text-xs font-bold text-gray-500 block mb-1">Stock Quantity</label>
           <input type="number" className="w-full border rounded-lg p-2 text-sm" value={form.quantity || ''} onChange={e => setForm({...form, quantity: parseInt(e.target.value)})} required />
+          {errors.quantity && <span className="text-xs text-red-500 mt-1 block">{errors.quantity}</span>}
         </div>
         <button type="submit" className="col-span-4 bg-indigo-600 text-white rounded-lg py-2.5 font-medium text-sm hover:bg-indigo-700 transition-colors">
           Add New Product Asset
